@@ -25,6 +25,11 @@ class StarfieldPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Fills the background itself rather than relying on Scaffold's own
+    // background color - pages with a transparent Scaffold (so this shows
+    // through their AppBar too) would otherwise have nothing painting a
+    // backdrop at all, just the dots on whatever's behind everything.
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = const Color(0xff16130b));
     for (final star in _stars) {
       canvas.drawCircle(
         Offset(star.dx * size.width, star.dy * maxDy * size.height),

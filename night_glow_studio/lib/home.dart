@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'app_footer.dart';
 import 'app_header.dart';
 
 class Home extends StatefulWidget {
@@ -73,7 +74,7 @@ class _HomeState extends State<Home> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const NsMobileSubheader(subtitle: "still up? let's create"),
+            const NsMobileSubheader(subtitle: 'for restless minds'),
             Container(
               width: 250,
               padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
@@ -142,7 +143,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const NsAppBar(showActions: false, subtitle: "still up? let's create", transparent: true),
+      appBar: const NsAppBar(showActions: false, subtitle: 'for restless minds', transparent: true),
       body: LayoutBuilder(
         builder: (context, outerConstraints) {
           // Mobile has no road line, so the starfield can use the full screen
@@ -151,6 +152,23 @@ class _HomeState extends State<Home> {
           return Stack(
         children: [
           Positioned.fill(child: CustomPaint(painter: _StarfieldPainter(maxDy: isMobile ? 1.0 : 0.62))),
+          // Positioned (not part of the Center'd content below) so it can't
+          // affect the lamp/traffic-light's own carefully-tuned sizing.
+          // Desktop already gets an about link in the AppBar's top-right -
+          // mobile doesn't (see NsMobileSubheader), so it rides along with
+          // the footer here instead of being added a second time up top.
+          if (isMobile)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 4,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [NsAppBar.aboutButton(context), const NsFooter()],
+              ),
+            )
+          else
+            const Positioned(left: 0, right: 0, bottom: 4, child: NsFooter()),
           Center(
         child: LayoutBuilder(
           builder: (context, constraints) {

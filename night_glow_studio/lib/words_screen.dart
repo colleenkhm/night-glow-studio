@@ -8,10 +8,23 @@ class WordsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const SiteHubScreen(
       cards: [
-        SiteCardData(title: 'site 1', description: 'site 1 description', tags: ['tag 1', 'tag 2']),
-        SiteCardData(title: 'site 2', description: 'site 2 description', tags: ['tag 1']),
-        SiteCardData(title: 'site 3', description: 'site 3 description', tags: ['tag 1', 'tag 2']),
-        SiteCardData(title: 'site 4', description: 'site 4 description', tags: ['tag 1']),
+        SiteCardData(
+          title: 'scaler',
+          description: 'an app to help users discover what scale a song could be in',
+          tags: ['music'],
+          url: 'https://colleenkhm.github.io/scaler/',
+        ),
+        SiteCardData(
+          title: 'just a word',
+          description: 'an app for users to look up word definitions',
+          tags: ['words', 'writing'],
+          url: 'https://www.just-a-word.com/',
+        ),
+        SiteCardData(
+          title: 'chordfinder',
+          description: 'a hub for all piano and guitar chords a user might want to see laid out clearly',
+          tags: ['music'],
+        ),
       ],
     );
   }

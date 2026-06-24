@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'app_footer.dart';
 import 'app_header.dart';
 import 'starfield.dart';
 
 class SiteCardData {
-  const SiteCardData({required this.title, required this.description, this.tags = const []});
+  const SiteCardData({required this.title, required this.description, this.tags = const [], this.url});
 
   final String title;
   final String description;
   final List<String> tags;
+  // Cards without a url just aren't clickable - for sites that don't exist yet.
+  final String? url;
 }
 
 // Reusable hub layout: starfield background + a wrap of site cards. Each page
@@ -32,21 +36,32 @@ class SiteHubScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: Colors.transparent,
             appBar: const NsAppBar(transparent: true),
-            body: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-                child: Column(
-                  children: [
-                    if (isMobile) const NsMobileSubheader(showLinks: true),
-                    Wrap(
-                      spacing: 20,
-                      runSpacing: 20,
-                      alignment: WrapAlignment.center,
-                      children: [for (final card in cards) _SiteCard(card: card)],
+            // Footer lives outside the scrollable/centered area, as its own
+            // fixed Column child, so it's anchored to the bottom of the
+            // screen instead of getting vertically centered along with the
+            // cards on pages that don't have enough of them to fill the page.
+            body: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          if (isMobile) const NsMobileSubheader(showLinks: true),
+                          Wrap(
+                            spacing: 20,
+                            runSpacing: 20,
+                            alignment: WrapAlignment.center,
+                            children: [for (final card in cards) _SiteCard(card: card)],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const NsFooter(),
+              ],
             ),
           ),
         ),
@@ -69,11 +84,14 @@ class _SiteCardState extends State<_SiteCard> {
 
   @override
   Widget build(BuildContext context) {
+    final url = widget.card.url;
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: url == null ? MouseCursor.defer : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
-      child: AnimatedOpacity(
+      child: GestureDetector(
+        onTap: url == null ? null : () => launchUrl(Uri.parse(url), webOnlyWindowName: '_blank'),
+        child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: _hovering ? 1 : 0.75,
         child: Container(
@@ -119,6 +137,7 @@ class _SiteCardState extends State<_SiteCard> {
                 ),
             ],
           ),
+        ),
         ),
       ),
     );

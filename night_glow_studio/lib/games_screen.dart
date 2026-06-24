@@ -8,10 +8,30 @@ class GamesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const SiteHubScreen(
       cards: [
-        SiteCardData(title: 'site 1', description: 'site 1 description', tags: ['tag 1', 'tag 2']),
-        SiteCardData(title: 'site 2', description: 'site 2 description', tags: ['tag 1']),
-        SiteCardData(title: 'site 3', description: 'site 3 description', tags: ['tag 1', 'tag 2']),
-        SiteCardData(title: 'site 4', description: 'site 4 description', tags: ['tag 1']),
+        SiteCardData(
+          title: 'fancy pants adventure',
+          description: 'a side-scrolling platformer starring a stick-figure in fancy pants, known for its fluid running and jumping',
+          tags: ['games'],
+          url: 'https://www.newgrounds.com/portal/view/301341',
+        ),
+        SiteCardData(
+          title: 'redactle',
+          description: 'uncovers a redacted Wikipedia article one guessed word at a time until you can identify the topic',
+          tags: ['games', 'words'],
+          url: 'https://redactle.net/',
+        ),
+        SiteCardData(
+          title: 'contexto',
+          description: 'a daily word-guessing game that scores each guess by how semantically close it is to the secret word',
+          tags: ['games', 'words'],
+          url: 'https://contexto.me/',
+        ),
+        // No url yet - not confident in a current, correct link for this one.
+        SiteCardData(
+          title: 'a dark room',
+          description: 'a minimalist text-based survival game that starts with just a dying fire and grows into an exploration of what lies beyond',
+          tags: ['games'],
+        ),
       ],
     );
   }

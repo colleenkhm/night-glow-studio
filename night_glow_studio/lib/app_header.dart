@@ -25,6 +25,22 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
       ];
 
+  // Shown everywhere the hub links are, plus Home (which hides those via
+  // showActions/showLinks since its lamp scene has its own inline links) -
+  // this is the one consistent way back to the about page from any screen.
+  static Widget aboutButton(BuildContext context) => GlowOnHover(
+        child: TextButton(
+          onPressed: () => Navigator.pushNamed(context, '/about'),
+          style: TextButton.styleFrom(overlayColor: Colors.transparent),
+          child: Text(
+            'about',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      );
+
   // Mobile keeps this AppBar down to just the title - subtitle and nav links
   // render as normal body content instead (see NsMobileSubheader), since
   // trying to fit variable-height extras into the AppBar's title slot kept
@@ -64,9 +80,13 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
     ),
     ),
-    actions: (!isMobile && showActions)
-        ? [for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)]]
-        : null,
+    actions: isMobile
+        ? null
+        : [
+            if (showActions) for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)],
+            aboutButton(context),
+            const SizedBox(width: 16),
+          ],
     );
   }
 }
@@ -82,7 +102,6 @@ class NsMobileSubheader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (subtitle == null && !showLinks) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
@@ -96,13 +115,16 @@ class NsMobileSubheader extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
+          // Only shown alongside the main hub links - on its own (e.g. Home,
+          // which has no showLinks) it ends up looking like an orphaned,
+          // out-of-place link right under the subtitle.
           if (showLinks)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 12,
-                children: NsAppBar.actionButtons(context),
+                children: [...NsAppBar.actionButtons(context), NsAppBar.aboutButton(context)],
               ),
             ),
         ],

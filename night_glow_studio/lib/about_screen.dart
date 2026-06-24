@@ -15,7 +15,7 @@ class AboutScreen extends StatelessWidget {
             child: Center(
               child: Padding(
                 padding: EdgeInsets.all(24),
-                child: Text('a toolkit for creatives, a portal for explorers, and an arcade for procrastinators. inspired by many late nights of internet exploring in high school and college'),
+                child: Text('a toolkit for creatives, a portal for explorers, and an arcade for procrastinators. inspired by many late nights in high school and college'),
               ),
             ),
           ),

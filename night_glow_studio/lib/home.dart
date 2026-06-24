@@ -44,7 +44,7 @@ class _HomeState extends State<Home> {
   // Same three links/routes the lamp scene uses below, indexed the same way, so
   // _hoveredLink/_setHovered work for both the lamp (tablet/desktop) and the
   // traffic light (mobile) without duplicating state.
-  static const List<String> _routes = ['/atlas', '/tools', '/arcade'];
+  static const List<String> _routes = ['/explore', '/create', '/arcade'];
   static const List<Color> _lightColors = [Colors.green, Colors.amber, Colors.red];
   // Stacked as two lines per bulb - fits the circular shape better than a
   // single wrapped phrase would.
@@ -59,42 +59,39 @@ class _HomeState extends State<Home> {
   // Mobile gets a traffic light instead of the lamp - that layout favors wide
   // screens, and a vertical street light reads better on a tall phone screen.
   // Same theme (street furniture, colored glow), same links/routes underneath.
+  // Plain top-down flow (no Align/topClearance trick) since the caller now
+  // puts this in a SingleChildScrollView - fixed-height layout here was what
+  // kept causing bottom overflow on shorter phones.
   Widget _buildTrafficLight() {
     // The AppBar is transparent and the body extends behind it (so the
-    // starfield reads as continuous), which means this top alignment is
-    // relative to the literal top of the screen now - clear the AppBar's own
-    // height plus the status bar inset before adding the usual breathing room.
-    // On mobile the AppBar is just the bare title (no +18 for a subtitle - see
+    // starfield reads as continuous), which means this needs its own top
+    // clearance for the AppBar's height plus the status bar inset. On mobile
+    // the AppBar is just the bare title (no +18 for a subtitle - see
     // NsAppBar/NsMobileSubheader), so this only needs kToolbarHeight itself.
     final topClearance = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Padding(
-        padding: EdgeInsets.only(top: topClearance),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const NsMobileSubheader(subtitle: 'for restless minds'),
-            Container(
-              width: 250,
-              padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2A2A2A),
-                borderRadius: BorderRadius.circular(48),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 2; i >= 0; i--) ...[
-                    if (i != 2) const SizedBox(height: 28),
-                    _trafficLightBulb(i),
-                  ],
-                ],
-              ),
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(height: topClearance),
+        const NsMobileSubheader(subtitle: 'for restless nights'),
+        Container(
+          width: 250,
+          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A2A2A),
+            borderRadius: BorderRadius.circular(48),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 2; i >= 0; i--) ...[
+                if (i != 2) const SizedBox(height: 28),
+                _trafficLightBulb(i),
+              ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -143,7 +140,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const NsAppBar(showActions: false, subtitle: 'for restless minds', transparent: true),
+      appBar: const NsAppBar(showActions: false, subtitle: 'for restless nights', transparent: true),
       body: LayoutBuilder(
         builder: (context, outerConstraints) {
           // Mobile has no road line, so the starfield can use the full screen
@@ -152,29 +149,32 @@ class _HomeState extends State<Home> {
           return Stack(
         children: [
           Positioned.fill(child: CustomPaint(painter: _StarfieldPainter(maxDy: isMobile ? 1.0 : 0.62))),
-          // Positioned (not part of the Center'd content below) so it can't
-          // affect the lamp/traffic-light's own carefully-tuned sizing.
           // Desktop already gets an about link in the AppBar's top-right -
           // mobile doesn't (see NsMobileSubheader), so it rides along with
           // the footer here instead of being added a second time up top.
           if (isMobile)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 4,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [NsAppBar.aboutButton(context), const NsFooter()],
+            // Scrollable so this can never overflow, regardless of viewport
+            // height or how much content (traffic light + about + footer)
+            // there is - mirrors the fix already used for the hub pages,
+            // instead of continuing to hand-tune fixed heights/padding here.
+            Positioned.fill(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildTrafficLight(),
+                    const SizedBox(height: 32),
+                    NsAppBar.aboutButton(context),
+                    const NsFooter(),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             )
-          else
+          else ...[
             const Positioned(left: 0, right: 0, bottom: 4, child: NsFooter()),
-          Center(
+            Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            if (constraints.maxWidth < 600) {
-              return _buildTrafficLight();
-            }
             // Bigger breakpoints get a smaller fraction since the screen itself
             // is already larger - keeps the composition prominent at every size
             // without it becoming oversized on wide desktop windows.
@@ -310,7 +310,7 @@ class _HomeState extends State<Home> {
               MouseRegion(
                 onEnter: (_) => _setHovered(0),
                 onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/tools'),
+                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/create'),
                 style: TextButton.styleFrom(overlayColor: Colors.transparent),
                 child: const Text('make something', style: TextStyle(fontSize: 13)),
                 ),
@@ -319,7 +319,7 @@ class _HomeState extends State<Home> {
               MouseRegion(
                 onEnter: (_) => _setHovered(1),
                 onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/atlas'),
+                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/explore'),
                 style: TextButton.styleFrom(overlayColor: Colors.transparent),
                 child: const Text('go somewhere', style: TextStyle(fontSize: 13)),
                 ),
@@ -362,6 +362,7 @@ class _HomeState extends State<Home> {
           },
         ),
       ),
+          ],
         ],
       );
         },

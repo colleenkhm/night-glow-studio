@@ -28,8 +28,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const Home(),
-        '/tools': (context) => const WordsScreen(),
-        '/atlas': (context) => const MusicScreen(),
+        '/create': (context) => const WordsScreen(),
+        '/explore': (context) => const MusicScreen(),
         '/arcade': (context) => const GamesScreen(),
         '/about': (context) => const AboutScreen(),
       },

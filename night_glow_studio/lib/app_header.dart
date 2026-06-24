@@ -11,8 +11,8 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
   // background reads as continuous instead of cutting off at the AppBar.
   final bool transparent;
 
-  static const labels = ['create', 'travel', 'procrastinate'];
-  static const routes = ['/tools', '/atlas', '/arcade'];
+  static const labels = ['create', 'explore', 'arcade'];
+  static const routes = ['/create', '/explore', '/arcade'];
 
   static List<Widget> actionButtons(BuildContext context) => [
         for (var i = 0; i < labels.length; i++)

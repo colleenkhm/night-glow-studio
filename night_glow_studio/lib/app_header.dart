@@ -12,14 +12,14 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(centerTitle: false, automaticallyImplyLeading: false, title: GlowOnHover(child: MouseRegion(cursor: SystemMouseCursors.click,
+    return AppBar(centerTitle: false, automaticallyImplyLeading: false, title: MouseRegion(cursor: SystemMouseCursors.click,
     child: GestureDetector(onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('broken curfew studio'),
+        GlowOnHover(child: const Text('broken curfew studio')),
         if (subtitle != null)
           Text(
             subtitle!,
@@ -30,7 +30,7 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
       ],
     ),
     ),
-    )),
+    ),
     actions: showActions ? [
       GlowOnHover(child: TextButton(onPressed: () => Navigator.pushNamed(context, '/words'),
       style: TextButton.styleFrom(overlayColor: Colors.transparent),

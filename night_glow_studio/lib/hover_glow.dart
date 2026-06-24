@@ -17,13 +17,21 @@ class _GlowOnHoverState extends State<GlowOnHover> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
-      child: AnimatedContainer(
+      // blurRadius is kept constant and only the color's opacity animates - toggling
+      // boxShadow between [] and [shadow] makes Flutter lerp from a "zero" shadow,
+      // which animates blurRadius from 0 too, flashing a sharp-edged solid rectangle
+      // before it has time to diffuse into a soft glow.
+      child: TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          boxShadow: _hovering
-              ? [BoxShadow(color: Colors.amber.withValues(alpha: 0.35), blurRadius: 18)]
-              : [],
-        ),
+        tween: Tween<double>(end: _hovering ? 0.35 : 0),
+        builder: (context, opacity, child) {
+          return Container(
+            decoration: BoxDecoration(
+              boxShadow: [BoxShadow(color: Colors.amber.withValues(alpha: opacity), blurRadius: 18)],
+            ),
+            child: child,
+          );
+        },
         child: widget.child,
       ),
     );

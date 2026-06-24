@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -14,17 +15,41 @@ class _HomeState extends State<Home> {
   // Index of the nav link currently hovered: 0 = words, 1 = music, 2 = about, null = none.
   int? _hoveredLink;
 
-  // Lamp tilt per link, in turns (1 turn = 360deg). Pivot is the lamp's top-center,
-  // so design the lamp/beam art with its mounting point at the top.
-  static const List<double> _tiltTurns = [1 / 16, 0, -1 / 16]; // +22.5deg, 0deg, -22.5deg
+  // Lamp tilt per link, in turns (1 turn = 360deg). Pivot is the lamp's top-center.
+  // The fixed pivot sits toward the left of the row, so all three links now need
+  // a rightward (negative) tilt of varying degree rather than a symmetric swing.
+  // Capped at a natural-looking angle - the beam's own reach covers the rest.
+  static const List<double> _tiltTurns = [-0.00, -0.10, -0.15]; // -7.2deg, -32.4deg, -46.8deg
+
+  // Beam length per link, in px. A fixed-length beam rotated by more covers less
+  // vertical distance per unit length (more of it goes sideways), so it needs to
+  // get longer as the tilt increases to still land exactly on the ground line
+  // instead of overshooting past it.
+  static const List<double> _beamHeights = [175, 209, 265];
+
+  // Arm is rooted at the pole top and is a fixed length/angle - it doesn't slide
+  // or stretch per link. Only the head tilts (see _tiltTurns) and the beam glows
+  // toward whichever link is hovered.
+  static const double _armPivotX = 17;
+  static const double _armPivotY = -20;
+  static const double _armLength = 55;
+  static const double _armAngle = -0.3;
+
+  // Head sits at the arm's tip, accounting for the wedge being centered within
+  // the head's 90-wide SizedBox (see the head's child Column below).
+  static const double _headLeft = 45;
+  static const double _headTop = -36;
 
   void _setHovered(int? index) => setState(() => _hoveredLink = index);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const NsAppBar(showActions: false, subtitle: 'creative tools for the eleventh hour'),
-      body: Center(
+      appBar: const NsAppBar(showActions: false, subtitle: "still up? let's create"),
+      body: Stack(
+        children: [
+          Positioned.fill(child: CustomPaint(painter: _StarfieldPainter())),
+          Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Bigger breakpoints get a smaller fraction since the screen itself
@@ -44,8 +69,11 @@ class _HomeState extends State<Home> {
                   // The lamp's own translate (below) shifts its rendered pixels right
                   // without widening its reserved layout space, so Center ends up
                   // centering a box that's mostly blank on the left. Compensate here.
-                  offset: const Offset(-70, 0),
-                  child: Row(
+                  offset: const Offset(-15, 0),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -59,27 +87,46 @@ class _HomeState extends State<Home> {
                 children: [
                   // fixed pole - stays put while the head above tilts toward the hovered link.
                   Positioned(
-                    left: 17,
-                    top: -20,
-                    child: Container(width: 6, height: 170, color: const Color(0xFF333333)),
+                    left: _armPivotX,
+                    top: _armPivotY,
+                    child: Container(width: 6, height: 182, color: const Color(0xFF333333)),
                   ),
-                  // fixed arm - pinned at the pole top, swings out and up to the side.
+                  // fixed arm - a short jut near the top of the pole. Doesn't move;
+                  // only the head tilts and the beam glows toward the hovered link.
                   Positioned(
-                    left: 17,
-                    top: -20,
+                    left: _armPivotX,
+                    top: _armPivotY,
                     child: Transform.rotate(
-                      angle: -0.36,
+                      angle: _armAngle,
                       alignment: Alignment.topLeft,
-                      child: Container(width: 133, height: 5, color: const Color(0xFF333333)),
+                      child: Container(width: _armLength, height: 5, color: const Color(0xFF333333)),
                     ),
                   ),
-                  // head - offset to the side, at the end of the arm.
+                  // small fill at the arm/head joint - rotating the head opens a gap
+                  // there since the arm itself doesn't rotate with it. Static, sitting
+                  // behind the head so it's covered at small tilts and only shows
+                  // through at larger ones, where it reads as a filled joint rather
+                  // than empty space. A circle has no specific angle to get wrong.
                   Positioned(
-                    left: 97,
-                    top: -67,
+                    left: 69,
+                    top: -36,
+                    child: Container(
+                      width: 4,
+                      height: 4,
+                      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF333333)),
+                    ),
+                  ),
+                  // head - fixed at the arm's tip, tilts toward the hovered link.
+                  Positioned(
+                    left: _headLeft,
+                    top: _headTop,
                     child: AnimatedRotation(
                       turns: _hoveredLink == null ? 0 : _tiltTurns[_hoveredLink!],
-                      alignment: Alignment.topCenter,
+                      // The wedge (40 wide) is centered in this 90-wide box, so its back
+                      // corner - where it touches the arm - sits at local x=25, not at the
+                      // box's center. Rotating around topCenter swung it away from the arm
+                      // on any non-zero tilt; this targets the wedge's actual corner instead.
+                      alignment: const Alignment(-0.4444, -1.0),
                       duration: const Duration(milliseconds: 200),
                       child: SizedBox(
                         // Fixed width so the beam widening on hover doesn't recenter the
@@ -88,15 +135,19 @@ class _HomeState extends State<Home> {
                         child: Column(
                         // Placeholder street lamp head - swap for real art anchored at its top-center.
                         children: [
-                          // lamp housing - one piece so it doesn't read as two
-                          // disconnected shapes once tilted.
+                          // lamp head - a flattened wedge rather than a boxy lantern,
+                          // with the light as a thin strip along its underside.
+                          ClipPath(
+                            clipper: _LampHeadClipper(),
+                            child: Container(width: 40, height: 22, color: const Color(0xFF333333)),
+                          ),
                           Container(
                             width: 32,
-                            height: 34,
+                            height: 3,
+                            margin: const EdgeInsets.only(top: 1),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF333333),
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-                              border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                              color: Colors.amber,
+                              boxShadow: [BoxShadow(color: Colors.amber.withValues(alpha: 0.6), blurRadius: 8)],
                             ),
                           ),
                           AnimatedOpacity(
@@ -107,8 +158,8 @@ class _HomeState extends State<Home> {
                             // the only hover indicator on the links, so it reaches further.
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
-                              width: _hoveredLink == null ? 12 : 110,
-                              height: 195,
+                              width: _hoveredLink == null ? 12 : 220,
+                              height: _hoveredLink == null ? 175 : _beamHeights[_hoveredLink!],
                               child: ImageFiltered(
                                 imageFilter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                                 child: ClipPath(
@@ -140,32 +191,51 @@ class _HomeState extends State<Home> {
               MouseRegion(
                 onEnter: (_) => _setHovered(0),
                 onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/words'),
+                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/tools'),
                 style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                child: const Text('words'),
+                child: const Text('make something', style: TextStyle(fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 8),
               MouseRegion(
                 onEnter: (_) => _setHovered(1),
                 onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/music'),
+                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/atlas'),
                 style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                child: const Text('music'),
+                child: const Text('go somewhere', style: TextStyle(fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 8),
               MouseRegion(
                 onEnter: (_) => _setHovered(2),
                 onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/about'),
+                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/arcade'),
                 style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                child: const Text('about'),
+                child: const Text('kill time', style: TextStyle(fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 8),
             ]),
           ],
+                      ),
+                      // ground line - sits at the pole/beam baseline, hinting at a sidewalk.
+                      Positioned(
+                        left: -40,
+                        right: -40,
+                        bottom: -4,
+                        child: Container(height: 1.5, color: Colors.white.withValues(alpha: 0.12)),
+                      ),
+                      // parked car, to the left of the lamppost.
+                      Positioned(
+                        left: 20,
+                        bottom: -4,
+                        child: SizedBox(
+                          width: 90,
+                          height: 36,
+                          child: CustomPaint(painter: _CarPainter()),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -173,8 +243,103 @@ class _HomeState extends State<Home> {
           },
         ),
       ),
+        ],
+      ),
     );
   }
+}
+
+// A handful of small, dim, fixed-position dots scattered across the background
+// to read as a night sky. Seeded per-star so positions are stable across rebuilds.
+class _StarfieldPainter extends CustomPainter {
+  // The starfield is a separate full-screen layer behind the lamp scene's own
+  // nested transforms, so it has no exact reading on where the road line lands.
+  // Capping dy keeps stars out of roughly where the road has shown up.
+  static const double _maxDy = 0.62;
+
+  static final List<_Star> _stars = List.generate(60, (i) {
+    final random = Random(i);
+    return _Star(
+      dx: random.nextDouble(),
+      dy: random.nextDouble() * _maxDy,
+      radius: 0.5 + random.nextDouble() * 1.2,
+      opacity: 0.2 + random.nextDouble() * 0.5,
+    );
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final star in _stars) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        star.radius,
+        Paint()..color = Colors.white.withValues(alpha: star.opacity),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Simple parked-car silhouette: a body with a raised cabin, two wheels, and a
+// tiny taillight for a bit of life along the road line.
+class _CarPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final body = Path()
+      ..moveTo(0, size.height * 0.55)
+      ..lineTo(size.width * 0.15, size.height * 0.55)
+      ..lineTo(size.width * 0.3, size.height * 0.05)
+      ..lineTo(size.width * 0.7, size.height * 0.05)
+      ..lineTo(size.width * 0.85, size.height * 0.55)
+      ..lineTo(size.width, size.height * 0.55)
+      ..lineTo(size.width, size.height * 0.85)
+      ..lineTo(0, size.height * 0.85)
+      ..close();
+    canvas.drawPath(body, Paint()..color = const Color(0xFF2A2A2A));
+
+    final wheelRadius = size.height * 0.24;
+    final wheelPaint = Paint()..color = const Color(0xFF1A1A1A);
+    canvas.drawCircle(Offset(size.width * 0.22, size.height * 0.85), wheelRadius, wheelPaint);
+    canvas.drawCircle(Offset(size.width * 0.78, size.height * 0.85), wheelRadius, wheelPaint);
+
+    canvas.drawCircle(
+      Offset(size.width * 0.04, size.height * 0.68),
+      size.height * 0.08,
+      Paint()..color = Colors.redAccent.withValues(alpha: 0.7),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _Star {
+  const _Star({required this.dx, required this.dy, required this.radius, required this.opacity});
+
+  final double dx;
+  final double dy;
+  final double radius;
+  final double opacity;
+}
+
+// Flattened wedge for the lamp head: tall at the back (near the arm), tapering
+// down toward the front, like a modern street-lamp fixture. Bottom edge stays
+// flat so the light strip below it (in the Column) sits flush against it.
+class _LampHeadClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, size.height * 0.4)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
 // Clips the beam into a trapezoid: narrow at the bulb, wide at the bottom.

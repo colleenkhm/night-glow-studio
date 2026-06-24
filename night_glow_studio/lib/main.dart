@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'util.dart';
+import 'theme.dart';
 import 'app_header.dart';
+import 'home.dart';
+import 'words_screen.dart';
+import 'music_screen.dart';
+import 'games_screen.dart';
+import 'about_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,14 +17,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
+    TextTheme textTheme = createTextTheme(context, "DM Sans", "Fraunces");
+    MaterialTheme theme = MaterialTheme(textTheme);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false, // Removes the debug banner in the corner
-      title: 'night glow studio',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      home: const BlankScreen(),
+      title: 'broken curfew studio',
+      theme: theme.darkMediumContrast(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const Home(),
+        '/words': (context) => const WordsScreen(),
+        '/music': (context) => const MusicScreen(),
+        '/games': (context) => const GamesScreen(),
+        '/about': (context) => const AboutScreen(),
+      },
     );
   }
 }
@@ -30,7 +45,7 @@ class BlankScreen extends StatelessWidget {
     return Scaffold(
       appBar: const NsAppBar(),
       body: Center(
-        child: Text('night glow studio', style: const TextStyle(color: Colors.white)),
+        child: Text('broken curfew studio', style: const TextStyle(color: Colors.white)),
       ),
     );
   }

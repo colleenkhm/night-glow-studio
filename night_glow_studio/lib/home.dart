@@ -63,28 +63,35 @@ class _HomeState extends State<Home> {
     // starfield reads as continuous), which means this top alignment is
     // relative to the literal top of the screen now - clear the AppBar's own
     // height plus the status bar inset before adding the usual breathing room.
-    // Matches NsAppBar.preferredSize's height when a subtitle is given (kToolbarHeight + 18).
-    final topClearance = MediaQuery.of(context).padding.top + kToolbarHeight + 18 + 24;
+    // On mobile the AppBar is just the bare title (no +18 for a subtitle - see
+    // NsAppBar/NsMobileSubheader), so this only needs kToolbarHeight itself.
+    final topClearance = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
     return Align(
       alignment: Alignment.topCenter,
       child: Padding(
         padding: EdgeInsets.only(top: topClearance),
-        child: Container(
-          width: 250,
-          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
-            borderRadius: BorderRadius.circular(48),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 2; i >= 0; i--) ...[
-                if (i != 2) const SizedBox(height: 28),
-                _trafficLightBulb(i),
-              ],
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const NsMobileSubheader(subtitle: "still up? let's create"),
+            Container(
+              width: 250,
+              padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A2A2A),
+                borderRadius: BorderRadius.circular(48),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var i = 2; i >= 0; i--) ...[
+                    if (i != 2) const SizedBox(height: 28),
+                    _trafficLightBulb(i),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

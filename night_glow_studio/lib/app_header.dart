@@ -11,8 +11,32 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
   // background reads as continuous instead of cutting off at the AppBar.
   final bool transparent;
 
+  static const labels = ['create', 'travel', 'procrastinate'];
+  static const routes = ['/tools', '/atlas', '/arcade'];
+
+  static List<Widget> actionButtons(BuildContext context) => [
+        for (var i = 0; i < labels.length; i++)
+          GlowOnHover(
+            child: TextButton(
+              onPressed: () => Navigator.pushNamed(context, routes[i]),
+              style: TextButton.styleFrom(overlayColor: Colors.transparent),
+              child: Text(labels[i]),
+            ),
+          ),
+      ];
+
+  // Mobile keeps this AppBar down to just the title - subtitle and nav links
+  // render as normal body content instead (see NsMobileSubheader), since
+  // trying to fit variable-height extras into the AppBar's title slot kept
+  // causing clipping that was fragile to get right across devices. Desktop/
+  // tablet keep the richer title (with subtitle) and actions, which haven't
+  // had that problem.
   @override
-  Size get preferredSize => Size.fromHeight(subtitle == null ? kToolbarHeight : kToolbarHeight + 18);
+  Size get preferredSize {
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final isMobile = (view.physicalSize.width / view.devicePixelRatio) < 600;
+    return Size.fromHeight(kToolbarHeight + (!isMobile && subtitle != null ? 18 : 0));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,40 +46,67 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
     elevation: transparent ? 0 : null,
     title: MouseRegion(cursor: SystemMouseCursors.click,
     child: GestureDetector(onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GlowOnHover(child: const Text('broken curfew studio')),
-        if (subtitle != null)
-          Text(
-            subtitle!,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
+    child: isMobile
+        ? GlowOnHover(child: const Text('broken curfew studio'))
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GlowOnHover(child: const Text('broken curfew studio')),
+              if (subtitle != null)
+                Text(
+                  subtitle!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+            ],
           ),
-      ],
     ),
     ),
-    ),
-    actions: showActions ? [
-      GlowOnHover(child: TextButton(onPressed: () => Navigator.pushNamed(context, '/words'),
-      style: TextButton.styleFrom(overlayColor: Colors.transparent),
-      child: const Text('words'),
-      )),
-      const SizedBox(width: 8),
-      GlowOnHover(child: TextButton(onPressed: () => Navigator.pushNamed(context, '/music'),
-      style: TextButton.styleFrom(overlayColor: Colors.transparent),
-      child: const Text('music'),
-      )),
-      const SizedBox(width: 8),
-      GlowOnHover(child: TextButton(onPressed: () => Navigator.pushNamed(context, '/about'),
-      style: TextButton.styleFrom(overlayColor: Colors.transparent),
-      child: const Text('about'),
-      )),
-      const SizedBox(width: 8),
-    ] : null
+    actions: (!isMobile && showActions)
+        ? [for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)]]
+        : null,
+    );
+  }
+}
+
+// Shown at the top of the body, mobile only, in place of what the AppBar
+// shows on desktop/tablet (subtitle and/or nav links) - normal body content
+// sizes itself naturally, unlike the AppBar's title slot.
+class NsMobileSubheader extends StatelessWidget {
+  const NsMobileSubheader({super.key, this.subtitle, this.showLinks = false});
+
+  final String? subtitle;
+  final bool showLinks;
+
+  @override
+  Widget build(BuildContext context) {
+    if (subtitle == null && !showLinks) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (subtitle != null)
+            Text(
+              subtitle!,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          if (showLinks)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                children: NsAppBar.actionButtons(context),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -1,5 +1,22 @@
 import "package:flutter/material.dart";
 
+// Just returns the page itself, with no animated transition at all - see the
+// comment where this is used, in MaterialTheme.theme().
+class _NoTransitionsBuilder extends PageTransitionsBuilder {
+  const _NoTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
+  }
+}
+
 class MaterialTheme {
   final TextTheme textTheme;
 
@@ -346,6 +363,20 @@ class MaterialTheme {
      ),
      scaffoldBackgroundColor: colorScheme.surface,
      canvasColor: colorScheme.surface,
+     // Pages have transparent Scaffold backgrounds (so each page's starfield
+     // shows through), which makes the default slide transition look like the
+     // outgoing page bleeds through the incoming one. Swapping instantly
+     // avoids that overlap entirely.
+     pageTransitionsTheme: const PageTransitionsTheme(
+       builders: {
+         TargetPlatform.android: _NoTransitionsBuilder(),
+         TargetPlatform.iOS: _NoTransitionsBuilder(),
+         TargetPlatform.macOS: _NoTransitionsBuilder(),
+         TargetPlatform.windows: _NoTransitionsBuilder(),
+         TargetPlatform.linux: _NoTransitionsBuilder(),
+         TargetPlatform.fuchsia: _NoTransitionsBuilder(),
+       },
+     ),
   );
 
 

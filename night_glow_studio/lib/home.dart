@@ -40,26 +40,120 @@ class _HomeState extends State<Home> {
   static const double _headLeft = 45;
   static const double _headTop = -36;
 
+  // Same three links/routes the lamp scene uses below, indexed the same way, so
+  // _hoveredLink/_setHovered work for both the lamp (tablet/desktop) and the
+  // traffic light (mobile) without duplicating state.
+  static const List<String> _routes = ['/atlas', '/tools', '/arcade'];
+  static const List<Color> _lightColors = [Colors.green, Colors.amber, Colors.red];
+  // Stacked as two lines per bulb - fits the circular shape better than a
+  // single wrapped phrase would.
+  static const List<List<String>> _lightLabels = [
+    ['go', 'somewhere'],
+    ['make', 'something'],
+    ['kill', 'time'],
+  ];
+
   void _setHovered(int? index) => setState(() => _hoveredLink = index);
+
+  // Mobile gets a traffic light instead of the lamp - that layout favors wide
+  // screens, and a vertical street light reads better on a tall phone screen.
+  // Same theme (street furniture, colored glow), same links/routes underneath.
+  Widget _buildTrafficLight() {
+    // The AppBar is transparent and the body extends behind it (so the
+    // starfield reads as continuous), which means this top alignment is
+    // relative to the literal top of the screen now - clear the AppBar's own
+    // height plus the status bar inset before adding the usual breathing room.
+    // Matches NsAppBar.preferredSize's height when a subtitle is given (kToolbarHeight + 18).
+    final topClearance = MediaQuery.of(context).padding.top + kToolbarHeight + 18 + 24;
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: EdgeInsets.only(top: topClearance),
+        child: Container(
+          width: 250,
+          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A2A2A),
+            borderRadius: BorderRadius.circular(48),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 2; i >= 0; i--) ...[
+                if (i != 2) const SizedBox(height: 28),
+                _trafficLightBulb(i),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _trafficLightBulb(int index) {
+    final active = _hoveredLink == index;
+    final color = _lightColors[index];
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => _setHovered(index),
+      onExit: (_) => _setHovered(null),
+      child: GestureDetector(
+        onTapDown: (_) => _setHovered(index),
+        onTapCancel: () => _setHovered(null),
+        onTapUp: (_) => _setHovered(null),
+        onTap: () => Navigator.pushNamed(context, _routes[index]),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 160,
+          height: 160,
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: active ? color : color.withValues(alpha: 0.25),
+            boxShadow: active
+                ? [BoxShadow(color: color.withValues(alpha: 0.7), blurRadius: 28, spreadRadius: 3)]
+                : [],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final word in _lightLabels[index])
+                Text(
+                  word,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const NsAppBar(showActions: false, subtitle: "still up? let's create"),
-      body: Stack(
+      extendBodyBehindAppBar: true,
+      appBar: const NsAppBar(showActions: false, subtitle: "still up? let's create", transparent: true),
+      body: LayoutBuilder(
+        builder: (context, outerConstraints) {
+          // Mobile has no road line, so the starfield can use the full screen
+          // instead of being capped to leave room for it.
+          final isMobile = outerConstraints.maxWidth < 600;
+          return Stack(
         children: [
-          Positioned.fill(child: CustomPaint(painter: _StarfieldPainter())),
+          Positioned.fill(child: CustomPaint(painter: _StarfieldPainter(maxDy: isMobile ? 1.0 : 0.62))),
           Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            if (constraints.maxWidth < 600) {
+              return _buildTrafficLight();
+            }
             // Bigger breakpoints get a smaller fraction since the screen itself
             // is already larger - keeps the composition prominent at every size
             // without it becoming oversized on wide desktop windows.
-            final double widthFraction = constraints.maxWidth < 600
-                ? 0.92
-                : constraints.maxWidth < 1024
-                    ? 0.8
-                    : 0.65;
+            final double widthFraction = constraints.maxWidth < 1024 ? 0.8 : 0.65;
             return SizedBox(
               width: constraints.maxWidth * widthFraction,
               height: constraints.maxHeight * 0.9,
@@ -244,6 +338,8 @@ class _HomeState extends State<Home> {
         ),
       ),
         ],
+      );
+        },
       ),
     );
   }
@@ -252,16 +348,21 @@ class _HomeState extends State<Home> {
 // A handful of small, dim, fixed-position dots scattered across the background
 // to read as a night sky. Seeded per-star so positions are stable across rebuilds.
 class _StarfieldPainter extends CustomPainter {
+  const _StarfieldPainter({this.maxDy = 0.62});
+
   // The starfield is a separate full-screen layer behind the lamp scene's own
   // nested transforms, so it has no exact reading on where the road line lands.
-  // Capping dy keeps stars out of roughly where the road has shown up.
-  static const double _maxDy = 0.62;
+  // Capping dy keeps stars out of roughly where the road has shown up - mobile
+  // has no road, so it passes 1.0 to use the full screen. dy is generated in
+  // [0,1] and scaled by maxDy at paint time, so the same star positions work
+  // for either case.
+  final double maxDy;
 
   static final List<_Star> _stars = List.generate(60, (i) {
     final random = Random(i);
     return _Star(
       dx: random.nextDouble(),
-      dy: random.nextDouble() * _maxDy,
+      dy: random.nextDouble(),
       radius: 0.5 + random.nextDouble() * 1.2,
       opacity: 0.2 + random.nextDouble() * 0.5,
     );
@@ -271,7 +372,7 @@ class _StarfieldPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final star in _stars) {
       canvas.drawCircle(
-        Offset(star.dx * size.width, star.dy * size.height),
+        Offset(star.dx * size.width, star.dy * maxDy * size.height),
         star.radius,
         Paint()..color = Colors.white.withValues(alpha: star.opacity),
       );
@@ -279,7 +380,7 @@ class _StarfieldPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _StarfieldPainter oldDelegate) => oldDelegate.maxDy != maxDy;
 }
 
 // Simple parked-car silhouette: a body with a raised cabin, two wheels, and a

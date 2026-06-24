@@ -2,21 +2,29 @@ import 'package:flutter/material.dart';
 import 'hover_glow.dart';
 
 class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const NsAppBar({super.key, this.showActions = true, this.subtitle});
+  const NsAppBar({super.key, this.showActions = true, this.subtitle, this.transparent = false});
 
   final bool showActions;
   final String? subtitle;
+  // For pages (like Home) that draw their own full-screen background (e.g. a
+  // starfield) behind the AppBar via Scaffold's extendBodyBehindAppBar, so the
+  // background reads as continuous instead of cutting off at the AppBar.
+  final bool transparent;
 
   @override
   Size get preferredSize => Size.fromHeight(subtitle == null ? kToolbarHeight : kToolbarHeight + 18);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(centerTitle: false, automaticallyImplyLeading: false, title: MouseRegion(cursor: SystemMouseCursors.click,
+    final isMobile = MediaQuery.sizeOf(context).width < 600;
+    return AppBar(centerTitle: isMobile, automaticallyImplyLeading: false,
+    backgroundColor: transparent ? Colors.transparent : null,
+    elevation: transparent ? 0 : null,
+    title: MouseRegion(cursor: SystemMouseCursors.click,
     child: GestureDetector(onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         GlowOnHover(child: const Text('broken curfew studio')),

@@ -45,7 +45,7 @@ class BlankScreen extends StatelessWidget {
     return Scaffold(
       appBar: const NsAppBar(),
       body: Center(
-        child: Text('broken curfew studio', style: const TextStyle(color: Colors.white)),
+        child: Text('night glow studio', style: const TextStyle(color: Colors.white)),
       ),
     );
   }

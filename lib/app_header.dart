@@ -117,14 +117,15 @@ class NsMobileSubheader extends StatelessWidget {
             ),
           // Only shown alongside the main hub links - on its own (e.g. Home,
           // which has no showLinks) it ends up looking like an orphaned,
-          // out-of-place link right under the subtitle.
+          // out-of-place link right under the subtitle. About isn't included
+          // here - on mobile it lives in NsFooter instead (see NsFooter).
           if (showLinks)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Wrap(
                 alignment: WrapAlignment.center,
                 spacing: 12,
-                children: [...NsAppBar.actionButtons(context), NsAppBar.aboutButton(context)],
+                children: NsAppBar.actionButtons(context),
               ),
             ),
         ],

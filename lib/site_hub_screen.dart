@@ -36,10 +36,14 @@ class SiteHubScreen extends StatelessWidget {
           child: Scaffold(
             backgroundColor: Colors.transparent,
             appBar: const NsAppBar(transparent: true),
-            // Footer lives outside the scrollable/centered area, as its own
-            // fixed Column child, so it's anchored to the bottom of the
-            // screen instead of getting vertically centered along with the
-            // cards on pages that don't have enough of them to fill the page.
+            // Desktop keeps the footer outside the scrollable/centered area,
+            // as its own fixed Column child, so it's anchored to the bottom
+            // of the screen instead of getting vertically centered along
+            // with the cards on pages that don't have enough of them to fill
+            // the page. Mobile instead scrolls the footer along with the
+            // cards (inside the same Center/SingleChildScrollView, so the
+            // horizontal centering is unaffected) - pinning it there stole
+            // space from the cards and felt disconnected from the page.
             body: Column(
               children: [
                 Expanded(
@@ -55,12 +59,13 @@ class SiteHubScreen extends StatelessWidget {
                             alignment: WrapAlignment.center,
                             children: [for (final card in cards) _SiteCard(card: card)],
                           ),
+                          if (isMobile) const NsFooter(),
                         ],
                       ),
                     ),
                   ),
                 ),
-                const NsFooter(),
+                if (!isMobile) const NsFooter(),
               ],
             ),
           ),

@@ -154,16 +154,16 @@ class _HomeState extends State<Home> {
           // the footer here instead of being added a second time up top.
           if (isMobile)
             // Scrollable so this can never overflow, regardless of viewport
-            // height or how much content (traffic light + about + footer)
-            // there is - mirrors the fix already used for the hub pages,
-            // instead of continuing to hand-tune fixed heights/padding here.
+            // height or how much content (traffic light + footer) there is -
+            // mirrors the fix already used for the hub pages, instead of
+            // continuing to hand-tune fixed heights/padding here. About isn't
+            // listed separately here - NsFooter shows it on mobile.
             Positioned.fill(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
                     _buildTrafficLight(),
                     const SizedBox(height: 32),
-                    NsAppBar.aboutButton(context),
                     const NsFooter(),
                     const SizedBox(height: 16),
                   ],

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false, // Removes the debug banner in the corner
-      title: 'broken curfew studio',
+      title: 'night glow studio',
       theme: theme.darkMediumContrast(),
       initialRoute: '/',
       routes: {

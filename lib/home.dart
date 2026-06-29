@@ -26,7 +26,7 @@ class _HomeState extends State<Home> {
   // vertical distance per unit length (more of it goes sideways), so it needs to
   // get longer as the tilt increases to still land exactly on the ground line
   // instead of overshooting past it.
-  static const List<double> _beamHeights = [175, 209, 265];
+  static const List<double> _beamHeights = [175, 209, 310];
 
   // Arm is rooted at the pole top and is a fixed length/angle - it doesn't slide
   // or stretch per link. Only the head tilts (see _tiltTurns) and the beam glows
@@ -73,7 +73,7 @@ class _HomeState extends State<Home> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(height: topClearance),
-        const NsMobileSubheader(subtitle: 'for restless nights'),
+        const NsMobileSubheader(subtitle: 'for the curious and the restless'),
         Container(
           width: 250,
           padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
@@ -140,7 +140,7 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: const NsAppBar(showActions: false, subtitle: 'for restless nights', transparent: true),
+      appBar: const NsAppBar(showActions: false, subtitle: 'for the curious and the restless', transparent: true),
       body: LayoutBuilder(
         builder: (context, outerConstraints) {
           // Mobile has no road line, so the starfield can use the full screen
@@ -179,6 +179,28 @@ class _HomeState extends State<Home> {
             // is already larger - keeps the composition prominent at every size
             // without it becoming oversized on wide desktop windows.
             final double widthFraction = constraints.maxWidth < 1024 ? 0.8 : 0.65;
+            // The beam below is rotated as a rigid trapezoid along with the lamp
+            // head, so a bottom edge that's flat in the beam's own local space
+            // ends up tilted on screen once rotated - leaving a wedge of unlit
+            // gap between the beam and the (always-horizontal) ground line.
+            // beamTilt is that same rotation, in radians; the clipper below
+            // counter-rotates the edge by it so it renders horizontal on screen
+            // regardless of which link is hovered.
+            final double beamTilt = _hoveredLink == null ? 0 : _tiltTurns[_hoveredLink!] * 2 * pi;
+            // The blur bleeds past the beam's hard edge in whatever direction is
+            // "down" in the beam's own pre-rotation space - for the straight-down
+            // beam (no tilt) that's also screen-down, so it already glows past the
+            // ground line for free. Once rotated, that same bleed points off at an
+            // angle instead, so tilted beams need this bit of extra reach (carried
+            // through the same counter-rotation as the rest of the edge) to glow
+            // past the road by the same amount the untilted beam gets for free.
+            final double beamRoadOverlap = beamTilt == 0 ? 0 : 18;
+            final double beamReach = (_hoveredLink == null ? 175 : _beamHeights[_hoveredLink!]) + beamRoadOverlap;
+            final double beamWidth = _hoveredLink == null ? 12 : 220;
+            // Counter-rotating the edge swings one corner below beamReach - grow
+            // the box to fit it (the other corner ends up short of the box, which
+            // is fine; clipping just leaves it blank there).
+            final double beamBoxHeight = beamReach + (beamWidth / 2) * tan(beamTilt).abs();
             return SizedBox(
               width: constraints.maxWidth * widthFraction,
               height: constraints.maxHeight * 0.9,
@@ -277,19 +299,15 @@ class _HomeState extends State<Home> {
                             // the only hover indicator on the links, so it reaches further.
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
-                              width: _hoveredLink == null ? 12 : 220,
-                              height: _hoveredLink == null ? 175 : _beamHeights[_hoveredLink!],
+                              width: beamWidth,
+                              height: beamBoxHeight,
                               child: ImageFiltered(
                                 imageFilter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                                 child: ClipPath(
-                                clipper: _BeamClipper(),
+                                clipper: _BeamClipper(reach: beamReach, tiltRadians: beamTilt),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Colors.amber.withValues(alpha: 0.7), Colors.amber.withValues(alpha: 0.4)],
-                                    ),
+                                    color: Colors.amber.withValues(alpha: 0.6),
                                   ),
                                 ),
                               ),
@@ -306,35 +324,40 @@ class _HomeState extends State<Home> {
             ),
             ),
             const SizedBox(width: 8),
-            Wrap(children: [
-              MouseRegion(
-                onEnter: (_) => _setHovered(0),
-                onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/create'),
-                style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                child: const Text('make something', style: TextStyle(fontSize: 13)),
+            // Hover-out only lives on the outer region, not the individual
+            // buttons below - moving the mouse directly from one link to the
+            // next would otherwise hit the gap between them and briefly clear
+            // _hoveredLink, making the beam flicker off and back on instead of
+            // sweeping continuously from one link to the other.
+            MouseRegion(
+              onExit: (_) => _setHovered(null),
+              child: Wrap(children: [
+                MouseRegion(
+                  onEnter: (_) => _setHovered(0),
+                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/create'),
+                  style: TextButton.styleFrom(overlayColor: Colors.transparent),
+                  child: const Text('make something', style: TextStyle(fontSize: 13)),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              MouseRegion(
-                onEnter: (_) => _setHovered(1),
-                onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/explore'),
-                style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                child: const Text('go somewhere', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 8),
+                MouseRegion(
+                  onEnter: (_) => _setHovered(1),
+                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/explore'),
+                  style: TextButton.styleFrom(overlayColor: Colors.transparent),
+                  child: const Text('go somewhere', style: TextStyle(fontSize: 13)),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              MouseRegion(
-                onEnter: (_) => _setHovered(2),
-                onExit: (_) => _setHovered(null),
-                child: TextButton(onPressed: () => Navigator.pushNamed(context, '/arcade'),
-                style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                child: const Text('kill time', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 8),
+                MouseRegion(
+                  onEnter: (_) => _setHovered(2),
+                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/arcade'),
+                  style: TextButton.styleFrom(overlayColor: Colors.transparent),
+                  child: const Text('kill time', style: TextStyle(fontSize: 13)),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-            ]),
+                const SizedBox(width: 8),
+              ]),
+            ),
           ],
                       ),
                       // ground line - sits at the pole/beam baseline, hinting at a sidewalk.
@@ -470,18 +493,32 @@ class _LampHeadClipper extends CustomClipper<Path> {
 }
 
 // Clips the beam into a trapezoid: narrow at the bulb, wide at the bottom.
+// The bottom edge is pre-tilted by -tiltRadians (pivoting around its
+// midpoint, which stays at local y=reach) so that once the parent rotates
+// the whole beam by tiltRadians to aim it at the hovered link, the two
+// rotations cancel and the edge lands horizontal on screen - flat against
+// the ground line - instead of tilting along with the beam.
 class _BeamClipper extends CustomClipper<Path> {
+  _BeamClipper({required this.reach, required this.tiltRadians});
+
+  final double reach;
+  final double tiltRadians;
+
   @override
   Path getClip(Size size) {
     const topWidth = 12.0;
+    final halfDrop = (size.width / 2) * tan(tiltRadians);
+    final leftBottom = reach + halfDrop;
+    final rightBottom = reach - halfDrop;
     return Path()
       ..moveTo((size.width - topWidth) / 2, 0)
       ..lineTo((size.width + topWidth) / 2, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
+      ..lineTo(size.width, rightBottom)
+      ..lineTo(0, leftBottom)
       ..close();
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(covariant _BeamClipper oldClipper) =>
+      reach != oldClipper.reach || tiltRadians != oldClipper.tiltRadians;
 }

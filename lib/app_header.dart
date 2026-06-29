@@ -63,12 +63,12 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
     title: MouseRegion(cursor: SystemMouseCursors.click,
     child: GestureDetector(onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
     child: isMobile
-        ? GlowOnHover(child: const Text('broken curfew studio'))
+        ? GlowOnHover(child: const Text('night glow studio'))
         : Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              GlowOnHover(child: const Text('broken curfew studio')),
+              GlowOnHover(child: const Text('night glow studio')),
               if (subtitle != null)
                 Text(
                   subtitle!,

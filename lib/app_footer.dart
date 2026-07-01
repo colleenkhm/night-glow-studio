@@ -20,13 +20,14 @@ class NsFooter extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'a Flutter/Dart project by Colleen Murray',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-            ),
-          ),
+          // Commented out for now.
+          // Text(
+          //   'a Flutter/Dart project by Colleen Murray',
+          //   textAlign: TextAlign.center,
+          //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          //     color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+          //   ),
+          // ),
           if (isMobile && showAbout)
             Padding(
               padding: const EdgeInsets.only(top: 4),

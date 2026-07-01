@@ -3,8 +3,8 @@ import 'util.dart';
 import 'theme.dart';
 import 'app_header.dart';
 import 'home.dart';
-import 'words_screen.dart';
-import 'music_screen.dart';
+import 'explore_screen.dart';
+import 'create_screen.dart';
 import 'games_screen.dart';
 import 'about_screen.dart';
 
@@ -28,8 +28,8 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const Home(),
-        '/create': (context) => const WordsScreen(),
-        '/explore': (context) => const MusicScreen(),
+        '/create': (context) => const CreateScreen(),
+        '/explore': (context) => const ExploreScreen(),
         '/arcade': (context) => const GamesScreen(),
         '/about': (context) => const AboutScreen(),
       },

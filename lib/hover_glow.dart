@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 class GlowOnHover extends StatefulWidget {
-  const GlowOnHover({super.key, required this.child});
+  const GlowOnHover({super.key, required this.child, this.active = false});
 
   final Widget child;
+  // Keeps the glow lit even without a hover - for nav links, lets the one
+  // matching the current page stay glowing instead of only reacting to the
+  // mouse.
+  final bool active;
 
   @override
   State<GlowOnHover> createState() => _GlowOnHoverState();
@@ -23,7 +27,7 @@ class _GlowOnHoverState extends State<GlowOnHover> {
       // before it has time to diffuse into a soft glow.
       child: TweenAnimationBuilder<double>(
         duration: const Duration(milliseconds: 200),
-        tween: Tween<double>(end: _hovering ? 0.35 : 0),
+        tween: Tween<double>(end: _hovering || widget.active ? 0.35 : 0),
         builder: (context, opacity, child) {
           return Container(
             decoration: BoxDecoration(

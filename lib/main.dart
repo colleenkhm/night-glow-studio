@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'util.dart';
 import 'theme.dart';
 import 'app_header.dart';
 import 'home.dart';
-import 'explore_screen.dart';
-import 'create_screen.dart';
-import 'games_screen.dart';
-import 'about_screen.dart';
+import 'library_screen.dart';
+import 'studio_screen.dart';
+import 'arcade_screen.dart';
 
 void main() {
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -28,10 +29,9 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const Home(),
-        '/create': (context) => const CreateScreen(),
-        '/explore': (context) => const ExploreScreen(),
-        '/arcade': (context) => const GamesScreen(),
-        '/about': (context) => const AboutScreen(),
+        '/studio': (context) => const StudioScreen(),
+        '/library': (context) => const LibraryScreen(),
+        '/arcade': (context) => const ArcadeScreen(),
       },
     );
   }

@@ -13,20 +13,22 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // Index of the nav link currently hovered: 0 = words, 1 = music, 2 = about, null = none.
+  // Index of the nav link currently hovered: 0 = studio, 1 = library, 2 = arcade, null = none.
   int? _hoveredLink;
 
   // Lamp tilt per link, in turns (1 turn = 360deg). Pivot is the lamp's top-center.
   // The fixed pivot sits toward the left of the row, so all three links now need
   // a rightward (negative) tilt of varying degree rather than a symmetric swing.
   // Capped at a natural-looking angle - the beam's own reach covers the rest.
-  static const List<double> _tiltTurns = [-0.00, -0.10, -0.15]; // -7.2deg, -32.4deg, -46.8deg
+  static const List<double> _tiltTurns = [-0.00, -0.055, -0.105]; // 0deg, -19.8deg, -37.8deg
 
   // Beam length per link, in px. A fixed-length beam rotated by more covers less
   // vertical distance per unit length (more of it goes sideways), so it needs to
   // get longer as the tilt increases to still land exactly on the ground line
-  // instead of overshooting past it.
-  static const List<double> _beamHeights = [175, 209, 310];
+  // instead of overshooting past it. Values fit (via the pivot/rotation math,
+  // calibrated off the untilted case) so all three beams end at the same
+  // vertical position on screen - not just visually eyeballed.
+  static const List<double> _beamHeights = [175, 171, 214];
 
   // Arm is rooted at the pole top and is a fixed length/angle - it doesn't slide
   // or stretch per link. Only the head tilts (see _tiltTurns) and the beam glows
@@ -44,7 +46,7 @@ class _HomeState extends State<Home> {
   // Same three links/routes the lamp scene uses below, indexed the same way, so
   // _hoveredLink/_setHovered work for both the lamp (tablet/desktop) and the
   // traffic light (mobile) without duplicating state.
-  static const List<String> _routes = ['/explore', '/create', '/arcade'];
+  static const List<String> _routes = ['/library', '/studio', '/arcade'];
   static const List<Color> _lightColors = [Colors.green, Colors.amber, Colors.red];
   // Stacked as two lines per bulb - fits the circular shape better than a
   // single wrapped phrase would.
@@ -63,11 +65,6 @@ class _HomeState extends State<Home> {
   // puts this in a SingleChildScrollView - fixed-height layout here was what
   // kept causing bottom overflow on shorter phones.
   Widget _buildTrafficLight() {
-    // The AppBar is transparent and the body extends behind it (so the
-    // starfield reads as continuous), which means this needs its own top
-    // clearance for the AppBar's height plus the status bar inset. On mobile
-    // the AppBar is just the bare title (no +18 for a subtitle - see
-    // NsAppBar/NsMobileSubheader), so this only needs kToolbarHeight itself.
     final topClearance = MediaQuery.of(context).padding.top + kToolbarHeight + 4;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -75,17 +72,17 @@ class _HomeState extends State<Home> {
         SizedBox(height: topClearance),
         const NsMobileSubheader(subtitle: 'for the curious and the restless'),
         Container(
-          width: 250,
-          padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+          width: 225,
+          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 22),
           decoration: BoxDecoration(
             color: const Color(0xFF2A2A2A),
-            borderRadius: BorderRadius.circular(48),
+            borderRadius: BorderRadius.circular(43),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               for (var i = 2; i >= 0; i--) ...[
-                if (i != 2) const SizedBox(height: 28),
+                if (i != 2) const SizedBox(height: 25),
                 _trafficLightBulb(i),
               ],
             ],
@@ -109,15 +106,15 @@ class _HomeState extends State<Home> {
         onTap: () => Navigator.pushNamed(context, _routes[index]),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 160,
-          height: 160,
+          width: 144,
+          height: 144,
           alignment: Alignment.center,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: active ? color : color.withValues(alpha: 0.25),
             boxShadow: active
-                ? [BoxShadow(color: color.withValues(alpha: 0.7), blurRadius: 28, spreadRadius: 3)]
+                ? [BoxShadow(color: color.withValues(alpha: 0.7), blurRadius: 25, spreadRadius: 3)]
                 : [],
           ),
           child: Column(
@@ -127,7 +124,7 @@ class _HomeState extends State<Home> {
                 Text(
                   word,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
             ],
           ),
@@ -149,36 +146,43 @@ class _HomeState extends State<Home> {
           return Stack(
         children: [
           Positioned.fill(child: CustomPaint(painter: _StarfieldPainter(maxDy: isMobile ? 1.0 : 0.62))),
-          // Desktop already gets an about link in the AppBar's top-right -
-          // mobile doesn't (see NsMobileSubheader), so it rides along with
-          // the footer here instead of being added a second time up top.
           if (isMobile)
             // Scrollable so this can never overflow, regardless of viewport
             // height or how much content (traffic light + footer) there is -
             // mirrors the fix already used for the hub pages, instead of
-            // continuing to hand-tune fixed heights/padding here. About isn't
-            // listed separately here - NsFooter shows it on mobile.
+            // continuing to hand-tune fixed heights/padding here.
             Positioned.fill(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
                     _buildTrafficLight(),
                     const SizedBox(height: 32),
-                    const NsFooter(),
+                    MediaQuery(
+                      data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(0.9)),
+                      child: const NsFooter(),
+                    ),
                     const SizedBox(height: 16),
                   ],
                 ),
               ),
             )
           else ...[
-            const Positioned(left: 0, right: 0, bottom: 4, child: NsFooter()),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 4,
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(0.9)),
+                child: const NsFooter(),
+              ),
+            ),
             Center(
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Bigger breakpoints get a smaller fraction since the screen itself
             // is already larger - keeps the composition prominent at every size
             // without it becoming oversized on wide desktop windows.
-            final double widthFraction = constraints.maxWidth < 1024 ? 0.8 : 0.65;
+            final double widthFraction = constraints.maxWidth < 1024 ? 0.72 : 0.585;
             // The beam below is rotated as a rigid trapezoid along with the lamp
             // head, so a bottom edge that's flat in the beam's own local space
             // ends up tilted on screen once rotated - leaving a wedge of unlit
@@ -203,7 +207,7 @@ class _HomeState extends State<Home> {
             final double beamBoxHeight = beamReach + (beamWidth / 2) * tan(beamTilt).abs();
             return SizedBox(
               width: constraints.maxWidth * widthFraction,
-              height: constraints.maxHeight * 0.9,
+              height: constraints.maxHeight * 0.81,
               child: FittedBox(
                 fit: BoxFit.contain,
                 child: Transform.translate(
@@ -329,22 +333,29 @@ class _HomeState extends State<Home> {
             // next would otherwise hit the gap between them and briefly clear
             // _hoveredLink, making the beam flicker off and back on instead of
             // sweeping continuously from one link to the other.
-            MouseRegion(
+            //
+            // Shifted right (rendering only, same as the lamp's own translate
+            // above - doesn't change the Row's reserved layout width) so the
+            // untilted beam (link 0, tiltTurns[0] = 0) lands directly on the
+            // first link instead of the gap before it.
+            Transform.translate(
+              offset: const Offset(20, 0),
+              child: MouseRegion(
               onExit: (_) => _setHovered(null),
               child: Wrap(children: [
                 MouseRegion(
                   onEnter: (_) => _setHovered(0),
-                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/create'),
+                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/studio'),
                   style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                  child: const Text('make something', style: TextStyle(fontSize: 13)),
+                  child: const Text('studio', style: TextStyle(fontSize: 13)),
                   ),
                 ),
                 const SizedBox(width: 8),
                 MouseRegion(
                   onEnter: (_) => _setHovered(1),
-                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/explore'),
+                  child: TextButton(onPressed: () => Navigator.pushNamed(context, '/library'),
                   style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                  child: const Text('go somewhere', style: TextStyle(fontSize: 13)),
+                  child: const Text('library', style: TextStyle(fontSize: 13)),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -352,11 +363,12 @@ class _HomeState extends State<Home> {
                   onEnter: (_) => _setHovered(2),
                   child: TextButton(onPressed: () => Navigator.pushNamed(context, '/arcade'),
                   style: TextButton.styleFrom(overlayColor: Colors.transparent),
-                  child: const Text('kill time', style: TextStyle(fontSize: 13)),
+                  child: const Text('arcade', style: TextStyle(fontSize: 13)),
                   ),
                 ),
                 const SizedBox(width: 8),
               ]),
+              ),
             ),
           ],
                       ),

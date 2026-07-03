@@ -23,6 +23,14 @@ jobs:
       - name: Build web
         run: flutter build web --release --base-href "/"
 
+      # GitHub Pages has no server-side rewrites, so a direct visit/refresh on
+      # a path like /studio would 404 now that the app uses path-based URLs
+      # instead of a hash. GitHub Pages serves 404.html for any unmatched
+      # path, so making it an identical copy of index.html lets the Flutter
+      # app boot up as normal and route itself based on the URL.
+      - name: Add 404 fallback for client-side routing
+        run: cp build/web/index.html build/web/404.html
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:

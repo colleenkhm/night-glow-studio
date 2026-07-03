@@ -11,35 +11,23 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
   // background reads as continuous instead of cutting off at the AppBar.
   final bool transparent;
 
-  static const labels = ['create', 'explore', 'arcade'];
-  static const routes = ['/create', '/explore', '/arcade'];
+  static const labels = ['studio', 'library', 'arcade'];
+  static const routes = ['/studio', '/library', '/arcade'];
 
-  static List<Widget> actionButtons(BuildContext context) => [
-        for (var i = 0; i < labels.length; i++)
-          GlowOnHover(
-            child: TextButton(
-              onPressed: () => Navigator.pushNamed(context, routes[i]),
-              style: TextButton.styleFrom(overlayColor: Colors.transparent),
-              child: Text(labels[i]),
-            ),
-          ),
-      ];
-
-  // Shown everywhere the hub links are, plus Home (which hides those via
-  // showActions/showLinks since its lamp scene has its own inline links) -
-  // this is the one consistent way back to the about page from any screen.
-  static Widget aboutButton(BuildContext context) => GlowOnHover(
-        child: TextButton(
-          onPressed: () => Navigator.pushNamed(context, '/about'),
-          style: TextButton.styleFrom(overlayColor: Colors.transparent),
-          child: Text(
-            'about',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
+  static List<Widget> actionButtons(BuildContext context) {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    return [
+      for (var i = 0; i < labels.length; i++)
+        GlowOnHover(
+          active: currentRoute == routes[i],
+          child: TextButton(
+            onPressed: () => Navigator.pushNamed(context, routes[i]),
+            style: TextButton.styleFrom(overlayColor: Colors.transparent),
+            child: Text(labels[i]),
           ),
         ),
-      );
+    ];
+  }
 
   // Mobile keeps this AppBar down to just the title - subtitle and nav links
   // render as normal body content instead (see NsMobileSubheader), since
@@ -80,12 +68,11 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
     ),
     ),
-    actions: isMobile
+    actions: isMobile || !showActions
         ? null
         : [
-            if (showActions) for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)],
-            aboutButton(context),
-            const SizedBox(width: 16),
+            for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)],
+            const SizedBox(width: 8),
           ],
     );
   }
@@ -117,8 +104,7 @@ class NsMobileSubheader extends StatelessWidget {
             ),
           // Only shown alongside the main hub links - on its own (e.g. Home,
           // which has no showLinks) it ends up looking like an orphaned,
-          // out-of-place link right under the subtitle. About isn't included
-          // here - on mobile it lives in NsFooter instead (see NsFooter).
+          // out-of-place link right under the subtitle.
           if (showLinks)
             Padding(
               padding: const EdgeInsets.only(top: 8),

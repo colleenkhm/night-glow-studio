@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'site_hub_screen.dart';
 
-class GamesScreen extends StatelessWidget {
-  const GamesScreen({super.key});
+class ArcadeScreen extends StatelessWidget {
+  const ArcadeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +49,13 @@ class GamesScreen extends StatelessWidget {
           title: 'a dark room',
           description: 'a minimalist text-based survival game that starts with just a dying fire and grows into an exploration of what lies beyond',
           tags: ['minimalist', 'survival'],
+          url: 'https://adarkroom.doublespeakgames.com/',
         ),
         SiteCardData(
           title: 'level devil',
           description: 'a side-scrolling platformer that attempts to infuriate the player by throwing in tricks and traps',
           tags: ['side-scroller', 'platformer'],
+          url: 'https://leveldevilfull.com/',
         ),
         SiteCardData(
           title: 'idea games',
@@ -72,6 +74,30 @@ class GamesScreen extends StatelessWidget {
           description: 'a daily word game where you connect letters to create words',
           tags: ['words', 'puzzle'],
           url: 'https://zanagrams.com/',
+        ),
+        SiteCardData(
+          title: 'sandboxels',
+          description: 'a falling-sand physics sandbox with hundreds of elements that react, burn, and combine',
+          tags: ['sandbox', 'simulation'],
+          url: 'https://neal.fun/sandboxels/',
+        ),
+        SiteCardData(
+          title: 'cook',
+          description: 'a sandbox for chopping, mixing, and cooking up whatever dish you can imagine',
+          tags: ['sandbox', 'cooking'],
+          url: 'https://r74n.com/cook/',
+        ),
+        SiteCardData(
+          title: 'zen garden',
+          description: 'a relaxing digital zen garden you can rake and rearrange with your cursor',
+          tags: ['relaxation', 'sandbox'],
+          url: 'https://paint.toys/zen-garden/',
+        ),
+        SiteCardData(
+          title: 'particle garden',
+          description: 'a falling-particle sandbox where you paint with elements and watch them react and interact',
+          tags: ['sandbox', 'simulation'],
+          url: 'https://www.particlegarden.com/',
         ),
       ],
     );

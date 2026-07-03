@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'site_hub_screen.dart';
 
-class ExploreScreen extends StatelessWidget {
-  const ExploreScreen({super.key});
+class LibraryScreen extends StatelessWidget {
+  const LibraryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class ExploreScreen extends StatelessWidget {
           title: 'same energy',
           description: 'use an image to search for other images with similar energy',
           tags: ['art', 'design', 'tool'],
-          url: 'https://libraryofbabel.info/',
+          url: 'https://same.energy/',
         ),
         SiteCardData(
           title: 'random street view',

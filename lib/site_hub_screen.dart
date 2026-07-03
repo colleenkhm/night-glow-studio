@@ -65,7 +65,7 @@ class SiteHubScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (!isMobile) const NsFooter(),
+                if (!isMobile) const Padding(padding: EdgeInsets.only(bottom: 16), child: NsFooter()),
               ],
             ),
           ),

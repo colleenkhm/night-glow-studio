@@ -72,7 +72,7 @@ class LibraryScreen extends StatelessWidget {
         SiteCardData(
           title: 'mondrian and me',
           description: 'generates a unique piece of art in the style of Piet Mondrian, just for you',
-          tags: ['art', 'generative'],
+          tags: ['art', 'generative', 'interactive'],
           url: 'https://mondrianandme.com/',
         ),
         SiteCardData(
@@ -180,7 +180,7 @@ class LibraryScreen extends StatelessWidget {
         SiteCardData(
           title: 'runpee',
           description: 'tells you the best moments to step out during a movie without missing anything important',
-          tags: ['movies', 'tools'],
+          tags: ['movies', 'tool'],
           url: 'https://runpee.com/',
         ),
         SiteCardData(
@@ -194,6 +194,36 @@ class LibraryScreen extends StatelessWidget {
           description: 'describe the concept you mean and it finds the word you are looking for',
           tags: ['words', 'language'],
           url: 'https://reversedictionary.org/',
+        ),
+        SiteCardData(
+          title: 'because recollection: metronomy',
+          description: 'an interactive audio-visual trip through Metronomy\'s music, part of Because Music\'s 10-year anniversary project',
+          tags: ['music', 'interactive'],
+          url: 'http://because-recollection.com/metronomy',
+        ),
+        SiteCardData(
+          title: 'cameron\'s world',
+          description: 'a nostalgic collage of animated gifs and text excavated from archived GeoCities pages',
+          tags: ['nostalgia', 'internet culture'],
+          url: 'https://www.cameronsworld.net/',
+        ),
+        SiteCardData(
+          title: 'million dollar homepage',
+          description: 'a graphic time capsule of the internet in 2005, built pixel by pixel from a million purchased ad squares',
+          tags: ['internet culture', 'history'],
+          url: 'https://milliondollarhomepage.com/',
+        ),
+        SiteCardData(
+          title: 'ripples',
+          description: 'an interactive WebGL water simulation that ripples wherever you click and drag',
+          tags: ['interactive', 'simulation'],
+          url: 'https://nicopowa.github.io/ripples3/',
+        ),
+        SiteCardData(
+          title: 'line 05x6',
+          description: 'a hypnotic generative line animation from Chris Shier\'s long-running line art series',
+          tags: ['generative', 'art', 'interactive'],
+          url: 'https://csh.bz/line/05x6.html',
         ),
       ],
     );

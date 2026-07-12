@@ -286,13 +286,16 @@ class _HomeState extends State<Home> {
                             clipper: _LampHeadClipper(),
                             child: Container(width: 40, height: 22, color: const Color(0xFF333333)),
                           ),
-                          Container(
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
                             width: 32,
                             height: 3,
                             margin: const EdgeInsets.only(top: 1),
                             decoration: BoxDecoration(
-                              color: Colors.amber,
-                              boxShadow: [BoxShadow(color: Colors.amber.withValues(alpha: 0.6), blurRadius: 8)],
+                              color: _hoveredLink == null ? const Color(0xFF3A3A3A) : Colors.amber,
+                              boxShadow: _hoveredLink == null
+                                  ? const []
+                                  : [BoxShadow(color: Colors.amber.withValues(alpha: 0.6), blurRadius: 8)],
                             ),
                           ),
                           AnimatedOpacity(

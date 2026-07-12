@@ -10,7 +10,7 @@ class StudioScreen extends StatelessWidget {
       cards: [
         SiteCardData(
           title: 'scaler',
-          description: 'a tool to help musicians discover what scale a song could be in',
+          description: 'a tool to help musicians discover what key a song could be in',
           tags: ['music'],
           url: 'https://colleenkhm.github.io/scaler/',
         ),
@@ -43,6 +43,30 @@ class StudioScreen extends StatelessWidget {
           description: 'a tool for designing and decorating virtual rooms with real furniture and decor',
           tags: ['design', 'interior'],
           url: 'https://rooms.xyz/',
+        ),
+        SiteCardData(
+          title: 'anime.js',
+          description: 'a lightweight JavaScript animation library for building smooth, complex web animations',
+          tags: ['code', 'animation'],
+          url: 'https://animejs.com/',
+        ),
+        SiteCardData(
+          title: 'bandlab',
+          description: 'a free, cloud-based studio for recording, mixing, and collaborating on music online',
+          tags: ['music', 'tool'],
+          url: 'https://www.bandlab.com',
+        ),
+        SiteCardData(
+          title: 'musicca tuner',
+          description: 'a simple online tuner for getting your instrument in tune',
+          tags: ['music', 'tool'],
+          url: 'https://www.musicca.com/tuner',
+        ),
+        SiteCardData(
+          title: 'tailornova',
+          description: 'an online fashion design tool for visualizing garments in 3D and generating custom-fitted sewing patterns',
+          tags: ['design', 'sewing'],
+          url: 'https://tailornova.com/',
         ),
       ],
     );

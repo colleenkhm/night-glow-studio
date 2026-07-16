@@ -68,12 +68,35 @@ class NsAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
     ),
     ),
-    actions: isMobile || !showActions
-        ? null
-        : [
-            for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)],
-            const SizedBox(width: 8),
-          ],
+    actions: [
+      if (!isMobile && showActions) ...[
+        for (final button in actionButtons(context)) ...[button, const SizedBox(width: 8)],
+        const SizedBox(width: 8),
+      ],
+      const _RandomButton(),
+      const SizedBox(width: 8),
+    ],
+    );
+  }
+}
+
+// Dice icon that jumps to the random site generator (see random_screen.dart).
+// Kept in the AppBar itself (not the studio/library/arcade actionButtons row)
+// so it's reachable from every page, including mobile and Home, where those
+// text links either move into the body or are hidden entirely.
+class _RandomButton extends StatelessWidget {
+  const _RandomButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    return GlowOnHover(
+      active: currentRoute == '/random',
+      child: IconButton(
+        onPressed: () => Navigator.pushNamed(context, '/random'),
+        tooltip: 'random site',
+        icon: const Icon(Icons.casino, size: 20),
+      ),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'home.dart';
 import 'library_screen.dart';
 import 'studio_screen.dart';
 import 'arcade_screen.dart';
+import 'random_screen.dart';
 
 void main() {
   usePathUrlStrategy();
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         '/studio': (context) => const StudioScreen(),
         '/library': (context) => const LibraryScreen(),
         '/arcade': (context) => const ArcadeScreen(),
+        '/random': (context) => const RandomScreen(),
       },
     );
   }

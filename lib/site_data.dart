@@ -289,10 +289,10 @@ const arcadeCards = [
     url: 'https://www.newgrounds.com/portal/view/301341',
   ),
   SiteCardData(
-    title: 'geoguessr',
+    title: 'geotastic',
     description: 'drops you into a random Street View location and challenges you to guess where in the world you are',
     tags: ['geography', 'travel'],
-    url: 'https://www.geoguessr.com/',
+    url: 'https://geotastic.net/home',
   ),
   SiteCardData(
     title: 'worldle',

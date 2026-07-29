@@ -144,6 +144,12 @@ const studioCards = [
     url: 'https://marginalia-search.com/',
   ),
   SiteCardData(
+    title: "cooking for engineers",
+    description: 'a recipe book for those with an analytical mind',
+    tags: ['cooking', 'reference'],
+    url: 'https://www.cookingforengineers.com/',
+  ),
+  SiteCardData(
     title: "stitch picture dictionary",
     description: 'serendipitous search engine (favors text-heavy sites/older sites)',
     tags: ['dictionary', 'art', 'crafts', 'sewing'],

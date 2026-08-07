@@ -329,7 +329,7 @@ class _SiteCardState extends State<_SiteCard> {
                   child: Wrap(
                     spacing: 6,
                     children: [
-                      for (final tag in widget.card.tags)
+                      for (final tag in widget.card.tags.take(3))
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
